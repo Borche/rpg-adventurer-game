@@ -5,7 +5,6 @@ class GameScene extends Phaser.Scene {
 
   init() {
     this.scene.launch('Ui');
-    this.score = 0;
   }
 
   create() {
@@ -22,17 +21,36 @@ class GameScene extends Phaser.Scene {
   }
 
   createAudio() {
-    this.goldPickupAudio = this.sound.add('goldSound', { loop: false, volume: 0.2 });
+    this.goldPickupAudio = this.sound.add('goldSound', { loop: false, volume: 0.5 });
+    this.playerAttackAudio = this.sound.add('playerAttack', { loop: false, volume: 0.2 });
+    this.playerDeathAudio = this.sound.add('playerDeath', { loop: false, volume: 0.2 });
+    this.playerDamageAudio = this.sound.add('playerDamage', { loop: false, volume: 0.2 });
+    this.monsterDeathAudio = this.sound.add('enemyDeath', { loop: false, volume: 0.2 });
   }
 
-  createPlayer(location) {
-    this.player = new PlayerContainer(this, location[0] * 2, location[1] * 2, 'characters', 0);
+  createPlayer(playerObject) {
+    this.player = new PlayerContainer(
+      this,
+      playerObject.x * 2,
+      playerObject.y * 2,
+      'characters',
+      0,
+      playerObject.health,
+      playerObject.maxHealth,
+      playerObject.id,
+      this.playerAttackAudio
+    );
   }
 
   createGroups() {
     // create a chest group
     this.chests = this.physics.add.group();
     this.monsters = this.physics.add.group();
+
+    // runChildUpdate on groups is default set to false.
+    // setting it to true makes Phaser run the update() methods
+    // on the objects in the group, if they have one
+    this.monsters.runChildUpdate = true;
   }
 
   spawnChest(chestObject) {
@@ -64,8 +82,8 @@ class GameScene extends Phaser.Scene {
     if (!monster) {
       monster = new Monster(
         this,
-        monsterObject.x * 2,
-        monsterObject.y * 2,
+        monsterObject.x,
+        monsterObject.y,
         'monsters',
         monsterObject.frame,
         monsterObject.id,
@@ -79,7 +97,7 @@ class GameScene extends Phaser.Scene {
       monster.health = monsterObject.health;
       monster.maxHealth = monsterObject.maxHealth;
       monster.setTexture('monsters', monsterObject.frame);
-      monster.setPosition(monsterObject.x * 2, monsterObject.y * 2);
+      monster.setPosition(monsterObject.x, monsterObject.y);
       monster.makeActive();
     }
   }
@@ -96,25 +114,20 @@ class GameScene extends Phaser.Scene {
     // check for collisions between monster group and the tiled blocked layer
     this.physics.add.collider(this.monsters, this.map.blockedLayer);
     // check for overlaps between player and monster game objects
-    this.physics.add.overlap(this.player, this.monsters, this.enemyOverlap, null, this);
+    this.physics.add.overlap(this.player.weapon, this.monsters, this.enemyOverlap, null, this);
   }
 
-  enemyOverlap(player, enemy) {
-    enemy.makeInactive();
-    this.events.emit('destroyEnemy', enemy.id);
+  enemyOverlap(weapon, enemy) {
+    if (this.player.isAttacking && !this.player.swordHit) {
+      this.player.swordHit = true;
+      this.events.emit('monsterAttacked', enemy.id, this.player.id);
+    }
   }
 
   collectChest(player, chest) {
     // play gold pickup sound
     this.goldPickupAudio.play();
-    // update our score
-    this.score += chest.coins;
-    // update score in the ui
-    this.events.emit('updateScore', this.score);
-    // make chest game object inactive
-    chest.makeInactive();
-
-    this.events.emit('pickupChest', chest.id);
+    this.events.emit('pickupChest', chest.id, player.id);
   }
 
   createMap() {
@@ -123,8 +136,8 @@ class GameScene extends Phaser.Scene {
   }
 
   createGameManager() {
-    this.events.on('spawnPlayer', location => {
-      this.createPlayer(location);
+    this.events.on('spawnPlayer', playerObject => {
+      this.createPlayer(playerObject);
       this.addCollisions();
     });
 
@@ -132,8 +145,55 @@ class GameScene extends Phaser.Scene {
       this.spawnChest(chest);
     });
 
+    this.events.on('chestOpened', chestId => {
+      this.chests.getChildren().forEach(chest => {
+        if (chest.id === chestId) {
+          chest.makeInactive();
+        }
+      });
+    });
+
     this.events.on('monsterSpawned', monster => {
       this.spawnMonster(monster);
+    });
+
+    this.events.on('monsterHit', (monsterId, health) => {
+      this.monsters.getChildren().forEach(monster => {
+        if (monster.id === monsterId) {
+          monster.updateHealth(health);
+        }
+      });
+    });
+
+    this.events.on('monsterDied', monsterId => {
+      this.monsters.getChildren().forEach(monster => {
+        if (monster.id === monsterId) {
+          this.monsterDeathAudio.play();
+          monster.makeInactive();
+        }
+      });
+    });
+
+    this.events.on('monsterMovement', monsters => {
+      this.monsters.getChildren().forEach(monster => {
+        Object.keys(monsters).forEach(monsterId => {
+          if (monsterId === monster.id) {
+            this.physics.moveToObject(monster, monsters[monsterId], 40);
+          }
+        });
+      });
+    });
+
+    this.events.on('updatePlayerHealth', (playerId, health) => {
+      if (health < this.player.health) {
+        this.playerDamageAudio.play();
+      }
+      this.player.updateHealth(health);
+    });
+
+    this.events.on('respawnPlayer', playerObject => {
+      this.playerDeathAudio.play();
+      this.player.respawn(playerObject);
     });
 
     this.gameManager = new GameManager(this, this.map.map.objects);
