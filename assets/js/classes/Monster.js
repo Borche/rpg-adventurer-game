@@ -5,6 +5,8 @@ class Monster extends Phaser.Physics.Arcade.Image {
     this.id = id;
     this.health = health;
     this.maxHealth = maxHealth;
+    this.modelX = x;
+    this.modelY = y;
 
     // enable physics
     this.scene.physics.world.enable(this);
@@ -19,6 +21,36 @@ class Monster extends Phaser.Physics.Arcade.Image {
     // update the origin
     this.setOrigin(0);
     this.createHealthBar();
+    this.createCoordsText();
+    this.createModelCoordsText();
+  }
+
+  createCoordsText() {
+    this.coordsText = this.scene.add.text(0, 0, `(${this.x},${this.y})`, {
+      fontSize: '20px',
+      fill: '#fff'
+    });
+    this.updateCoordsText();
+  }
+
+  updateCoordsText() {
+    this.coordsText.setText(`(${Math.round(this.x)},${Math.round(this.y)})`);
+    this.coordsText.x = this.x - 32;
+    this.coordsText.y = this.y - 26;
+  }
+
+  createModelCoordsText() {
+    this.modelCoordsText = this.scene.add.text(0, 0, `(${this.modelX},${this.modelY})`, {
+      fontSize: '18px',
+      fill: '#abcdef'
+    });
+    this.updateModelCoordsText();
+  }
+
+  updateModelCoordsText() {
+    this.modelCoordsText.setText(`${this.modelX},${this.modelY})`);
+    this.modelCoordsText.x = this.x - 32;
+    this.modelCoordsText.y = this.y - 40;
   }
 
   createHealthBar() {
@@ -56,5 +88,12 @@ class Monster extends Phaser.Physics.Arcade.Image {
 
   update() {
     this.updateHealthBar();
+    this.updateCoordsText();
+    this.updateModelCoordsText();
+  }
+
+  updateModelCoords(x, y) {
+    this.modelX = x;
+    this.modelY = y;
   }
 }

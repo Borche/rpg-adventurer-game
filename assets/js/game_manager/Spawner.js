@@ -22,7 +22,7 @@ class Spawner {
     }, this.spawnInterval);
 
     // start move monsters interval
-    if (this.objectType === SpawnerType.MONSTER) this.moveMonsters();
+    if (this.objectType === SpawnerType.MONSTER) this.startMonsterMovement();
   }
 
   spawnObject() {
@@ -75,7 +75,7 @@ class Spawner {
     this.deleteObject(id);
   }
 
-  moveMonsters() {
+  startMonsterMovement() {
     this.moveMonsterInterval = setInterval(() => {
       this.objectsCreated.forEach(monster => {
         monster.move();

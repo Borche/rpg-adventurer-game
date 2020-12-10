@@ -174,11 +174,15 @@ class GameScene extends Phaser.Scene {
       });
     });
 
-    this.events.on('monsterMovement', monsters => {
+    this.events.on('monsterMovement', monsterModels => {
       this.monsters.getChildren().forEach(monster => {
-        Object.keys(monsters).forEach(monsterId => {
-          if (monsterId === monster.id) {
-            this.physics.moveToObject(monster, monsters[monsterId], 40);
+        Object.keys(monsterModels).forEach(monsterModelId => {
+          if (monsterModelId === monster.id) {
+            monster.updateModelCoords(
+              monsterModels[monsterModelId].x,
+              monsterModels[monsterModelId].y
+            );
+            this.physics.moveToObject(monster, monsterModels[monsterModelId], 40);
           }
         });
       });
