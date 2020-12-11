@@ -15,7 +15,7 @@ class MonsterModel {
     this.health -= 1;
   }
 
-  move() {
+  calculateNewCoords() {
     const randomPosition = randomNumber(1, 8);
     const distance = 64;
 

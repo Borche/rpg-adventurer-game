@@ -21,8 +21,10 @@ class Monster extends Phaser.Physics.Arcade.Image {
     // update the origin
     this.setOrigin(0);
     this.createHealthBar();
-    this.createCoordsText();
-    this.createModelCoordsText();
+    if (DEBUG) {
+      this.createCoordsText();
+      this.createModelCoordsText();
+    }
   }
 
   createCoordsText() {
@@ -48,7 +50,7 @@ class Monster extends Phaser.Physics.Arcade.Image {
   }
 
   updateModelCoordsText() {
-    this.modelCoordsText.setText(`${this.modelX},${this.modelY})`);
+    this.modelCoordsText.setText(`${Math.round(this.modelX)},${Math.round(this.modelY)})`);
     this.modelCoordsText.x = this.x - 32;
     this.modelCoordsText.y = this.y - 40;
   }
@@ -88,8 +90,10 @@ class Monster extends Phaser.Physics.Arcade.Image {
 
   update() {
     this.updateHealthBar();
-    this.updateCoordsText();
-    this.updateModelCoordsText();
+    if (DEBUG) {
+      this.updateCoordsText();
+      this.updateModelCoordsText();
+    }
   }
 
   updateModelCoords(x, y) {

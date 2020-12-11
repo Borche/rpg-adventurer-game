@@ -1,3 +1,6 @@
+// Used to toggle debug text on and off (coords for example)
+var DEBUG = true;
+
 const SpawnerType = {
   MONSTER: 'MONSTER',
   CHEST: 'CHEST'

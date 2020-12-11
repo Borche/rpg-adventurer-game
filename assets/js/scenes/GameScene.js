@@ -178,11 +178,9 @@ class GameScene extends Phaser.Scene {
       this.monsters.getChildren().forEach(monster => {
         Object.keys(monsterModels).forEach(monsterModelId => {
           if (monsterModelId === monster.id) {
-            monster.updateModelCoords(
-              monsterModels[monsterModelId].x,
-              monsterModels[monsterModelId].y
-            );
-            this.physics.moveToObject(monster, monsterModels[monsterModelId], 40);
+            const monsterModel = monsterModels[monsterModelId];
+            monster.updateModelCoords(monsterModel.x, monsterModel.y);
+            this.physics.moveToObject(monster, monsterModels[monsterModelId], 0, 1000);
           }
         });
       });
