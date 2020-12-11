@@ -77,9 +77,9 @@ class Spawner {
 
   startMonsterMovement() {
     this.moveMonsterInterval = setInterval(() => {
-      this.objectsCreated.forEach(monsterModel => {
+      /* this.objectsCreated.forEach(monsterModel => {
         monsterModel.calculateNewCoords();
-      });
+      });*/
 
       this.moveObjects();
     }, 1000);

@@ -9,7 +9,7 @@ class PlayerContainer extends Phaser.GameObjects.Container {
   constructor(scene, x, y, key, frame, health, maxHealth, id, attackAudio) {
     super(scene, x, y);
     this.scene = scene; // the scene this container will be added to
-    this.velocity = 160; // the velocity when moving our player
+    this.velocity = 160 * 2; // the velocity when moving our player
     this.currentDirection = Direction.RIGHT;
     this.isAttacking = false;
     this.flipX = true;
@@ -34,6 +34,8 @@ class PlayerContainer extends Phaser.GameObjects.Container {
     this.player = new Player(this.scene, 0, 0, key, frame);
     this.add(this.player);
 
+    this.body.setCircle(12, 20, 36);
+
     // create the weapon game object
     this.weapon = this.scene.add.image(40, 0, 'items', 4);
     this.scene.add.existing(this.weapon);
@@ -45,6 +47,8 @@ class PlayerContainer extends Phaser.GameObjects.Container {
 
     // create player's health bar
     this.createHealthBar();
+
+    console.log('Player[this]', this);
   }
 
   createHealthBar() {

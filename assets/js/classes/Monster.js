@@ -15,7 +15,9 @@ class Monster extends Phaser.Physics.Arcade.Image {
     // scale the monster
     this.setScale(2);
     // collide with world bounds
-    this.setCollideWorldBounds(true);
+    // this.setCollideWorldBounds(true); - has no effect, since
+    // it turns out phaser 3 groups reset this value when you add the
+    // game object to the group. (Apparently containers do the same?)
     // add the monster to the existing scene
     this.scene.add.existing(this);
     // update the origin
@@ -99,5 +101,54 @@ class Monster extends Phaser.Physics.Arcade.Image {
   updateModelCoords(x, y) {
     this.modelX = x;
     this.modelY = y;
+  }
+
+  calculateNewCoords() {
+    // if (this.x < 1000 && this.y > 1000 && this.y < 3000) {
+    //   return { x: -128, y: 1500 };
+    // }
+
+    const randomPosition = randomNumber(1, 8);
+    const distance = 64;
+
+    let newX = this.x;
+    let newY = this.y;
+
+    switch (randomPosition) {
+      case 1:
+        newX += distance;
+        break;
+      case 2:
+        newX -= distance;
+        break;
+      case 3:
+        newY += distance;
+        break;
+      case 4:
+        newY -= distance;
+        break;
+      case 5:
+        newX += distance;
+        newY += distance;
+        break;
+      case 6:
+        newX += distance;
+        newY -= distance;
+        break;
+      case 7:
+        newX -= distance;
+        newY += distance;
+        break;
+      case 8:
+        newX -= distance;
+        newY -= distance;
+        break;
+      default:
+        break;
+    }
+
+    // console.log('New coords: ', newX, newY);
+
+    return { x: newX, y: newY };
   }
 }

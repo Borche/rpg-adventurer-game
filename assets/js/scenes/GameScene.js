@@ -14,10 +14,12 @@ class GameScene extends Phaser.Scene {
     this.createInput();
 
     this.createGameManager();
+
+    console.log(`World: `, this.physics.world);
   }
 
   update() {
-    if (this.player) this.player.update(this.cursors);
+    if (this.playerContainer) this.playerContainer.update(this.cursors);
   }
 
   createAudio() {
@@ -29,10 +31,10 @@ class GameScene extends Phaser.Scene {
   }
 
   createPlayer(playerObject) {
-    this.player = new PlayerContainer(
+    this.playerContainer = new PlayerContainer(
       this,
-      playerObject.x * 2,
-      playerObject.y * 2,
+      64 + 32, // playerObject.x * 2,
+      this.physics.world.bounds.centerY - 64 * 2 - 32, // playerObject.y * 2,
       'characters',
       0,
       playerObject.health,
@@ -45,7 +47,7 @@ class GameScene extends Phaser.Scene {
   createGroups() {
     // create a chest group
     this.chests = this.physics.add.group();
-    this.monsters = this.physics.add.group();
+    this.monsters = this.physics.add.group({ collideWorldBounds: true });
 
     // runChildUpdate on groups is default set to false.
     // setting it to true makes Phaser run the update() methods
@@ -53,51 +55,52 @@ class GameScene extends Phaser.Scene {
     this.monsters.runChildUpdate = true;
   }
 
-  spawnChest(chestObject) {
+  spawnChest(chestModel) {
     let chest = this.chests.getFirstDead();
 
     if (!chest) {
       chest = new Chest(
         this,
-        chestObject.x * 2,
-        chestObject.y * 2,
+        chestModel.x * 2,
+        chestModel.y * 2,
         'items',
         0,
-        chestObject.gold,
-        chestObject.id
+        chestModel.gold,
+        chestModel.id
       );
       // add chest to chests group
       this.chests.add(chest);
     } else {
-      chest.coins = chestObject.gold;
-      chest.id = chestObject.id;
-      chest.setPosition(chestObject.x * 2, chestObject.y * 2);
+      chest.coins = chestModel.gold;
+      chest.id = chestModel.id;
+      chest.setPosition(chestModel.x * 2, chestModel.y * 2);
       chest.makeActive();
     }
   }
 
-  spawnMonster(monsterObject) {
+  spawnMonster(monsterModel) {
     let monster = this.monsters.getFirstDead();
 
     if (!monster) {
       monster = new Monster(
         this,
-        monsterObject.x,
-        monsterObject.y,
+        monsterModel.x,
+        monsterModel.y,
         'monsters',
-        monsterObject.frame,
-        monsterObject.id,
-        monsterObject.health,
-        monsterObject.maxHealth
+        monsterModel.frame,
+        monsterModel.id,
+        monsterModel.health,
+        monsterModel.maxHealth
       );
       // add monster to monsters group
       this.monsters.add(monster);
+      // monster.setCollideWorldBounds(true);
     } else {
-      monster.id = monsterObject.id;
-      monster.health = monsterObject.health;
-      monster.maxHealth = monsterObject.maxHealth;
-      monster.setTexture('monsters', monsterObject.frame);
-      monster.setPosition(monsterObject.x, monsterObject.y);
+      monster.id = monsterModel.id;
+      monster.health = monsterModel.health;
+      monster.maxHealth = monsterModel.maxHealth;
+      monster.setTexture('monsters', monsterModel.frame);
+      monster.setPosition(monsterModel.x, monsterModel.y);
       monster.makeActive();
     }
   }
@@ -108,19 +111,25 @@ class GameScene extends Phaser.Scene {
 
   addCollisions() {
     // check for collisions between player and the tiled blocked layer
-    this.physics.add.collider(this.player, this.map.blockedLayer);
+    this.physics.add.collider(this.playerContainer, this.map.blockedLayer);
     // check for overlaps between player and chest game objects
-    this.physics.add.overlap(this.player, this.chests, this.collectChest, null, this);
+    this.physics.add.overlap(this.playerContainer, this.chests, this.collectChest, null, this);
     // check for collisions between monster group and the tiled blocked layer
     this.physics.add.collider(this.monsters, this.map.blockedLayer);
     // check for overlaps between player and monster game objects
-    this.physics.add.overlap(this.player.weapon, this.monsters, this.enemyOverlap, null, this);
+    this.physics.add.overlap(
+      this.playerContainer.weapon,
+      this.monsters,
+      this.enemyOverlap,
+      null,
+      this
+    );
   }
 
   enemyOverlap(weapon, enemy) {
-    if (this.player.isAttacking && !this.player.swordHit) {
-      this.player.swordHit = true;
-      this.events.emit('monsterAttacked', enemy.id, this.player.id);
+    if (this.playerContainer.isAttacking && !this.playerContainer.swordHit) {
+      this.playerContainer.swordHit = true;
+      this.events.emit('monsterAttacked', enemy.id, this.playerContainer.id);
     }
   }
 
@@ -136,30 +145,30 @@ class GameScene extends Phaser.Scene {
   }
 
   createGameManager() {
-    this.events.on('spawnPlayer', playerObject => {
-      this.createPlayer(playerObject);
+    this.events.on('spawnPlayer', playerModel => {
+      this.createPlayer(playerModel);
       this.addCollisions();
     });
 
-    this.events.on('chestSpawned', chest => {
-      this.spawnChest(chest);
+    this.events.on('chestSpawned', chestModel => {
+      this.spawnChest(chestModel);
     });
 
-    this.events.on('chestOpened', chestId => {
+    this.events.on('chestOpened', chestModelId => {
       this.chests.getChildren().forEach(chest => {
-        if (chest.id === chestId) {
+        if (chest.id === chestModelId) {
           chest.makeInactive();
         }
       });
     });
 
-    this.events.on('monsterSpawned', monster => {
-      this.spawnMonster(monster);
+    this.events.on('monsterSpawned', monsterModel => {
+      this.spawnMonster(monsterModel);
     });
 
-    this.events.on('monsterHit', (monsterId, health) => {
+    this.events.on('monsterHit', (monsterModelId, health) => {
       this.monsters.getChildren().forEach(monster => {
-        if (monster.id === monsterId) {
+        if (monster.id === monsterModelId) {
           monster.updateHealth(health);
         }
       });
@@ -176,26 +185,29 @@ class GameScene extends Phaser.Scene {
 
     this.events.on('monsterMovement', monsterModels => {
       this.monsters.getChildren().forEach(monster => {
-        Object.keys(monsterModels).forEach(monsterModelId => {
-          if (monsterModelId === monster.id) {
-            const monsterModel = monsterModels[monsterModelId];
-            monster.updateModelCoords(monsterModel.x, monsterModel.y);
-            this.physics.moveToObject(monster, monsterModels[monsterModelId], 0, 1000);
-          }
-        });
+        let newCoords = monster.calculateNewCoords();
+        this.physics.moveToObject(monster, newCoords, 40); // , 1000);
+
+        if (monsterModels[monster.id]) {
+          // for now at least, also update monsterModel in case we need
+          // the coords there for something...
+          monsterModels[monster.id].x = newCoords.x;
+          monsterModels[monster.id].y = newCoords.y;
+          monster.updateModelCoords(monsterModels[monster.id].x, monsterModels[monster.id].y);
+        }
       });
     });
 
     this.events.on('updatePlayerHealth', (playerId, health) => {
-      if (health < this.player.health) {
+      if (health < this.playerContainer.health) {
         this.playerDamageAudio.play();
       }
-      this.player.updateHealth(health);
+      this.playerContainer.updateHealth(health);
     });
 
     this.events.on('respawnPlayer', playerObject => {
       this.playerDeathAudio.play();
-      this.player.respawn(playerObject);
+      this.playerContainer.respawn(playerObject);
     });
 
     this.gameManager = new GameManager(this, this.map.map.objects);
