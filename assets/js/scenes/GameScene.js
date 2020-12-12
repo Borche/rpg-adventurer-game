@@ -5,6 +5,7 @@ class GameScene extends Phaser.Scene {
 
   init() {
     this.scene.launch('Ui');
+    this.keyM = this.input.keyboard.addKey('M');
   }
 
   create() {
@@ -52,11 +53,40 @@ class GameScene extends Phaser.Scene {
     // create a chest group
     this.chests = this.physics.add.group();
     this.monsters = this.physics.add.group({ collideWorldBounds: true });
+    this.fireballs = this.physics.add.group();
 
     // runChildUpdate on groups is default set to false.
     // setting it to true makes Phaser run the update() methods
     // on the objects in the group, if they have one
     this.monsters.runChildUpdate = true;
+  }
+
+  spawnFireball() {
+    let fireball = this.fireballs.getFirstDead();
+
+    if (!fireball) {
+      fireball = new Fireball(this, this.playerContainer, 'fireball', 'temp-fireball-id-2');
+      // add chest to chests group
+      this.fireballs.add(fireball);
+    } else {
+      fireball.id = 'another-fireball-id';
+      fireball.setPosition(this.playerContainer.x, this.playerContainer.y);
+      fireball.makeActive();
+    }
+
+    const target = fireball.getTarget(this.playerContainer);
+    this.physics.moveToObject(fireball, target, 400);
+
+    fireball.expireTimer = this.time.delayedCall(
+      2000,
+      () => {
+        fireball.makeInactive();
+      },
+      [],
+      this
+    );
+
+    console.log(this.fireballs.getChildren().length);
   }
 
   spawnChest(chestModel) {
@@ -128,12 +158,34 @@ class GameScene extends Phaser.Scene {
       null,
       this
     );
+
+    this.physics.add.collider(
+      this.fireballs,
+      this.map.blockedLayer,
+      (fireball, blockingObject) => {
+        if (fireball.expireTimer) fireball.expireTimer.remove(false);
+        fireball.makeInactive();
+        console.log('Fireball collided!');
+      },
+      null,
+      this
+    );
+
+    this.physics.add.overlap(this.fireballs, this.monsters, this.fireballStruckMonster, null, this);
   }
 
-  enemyOverlap(weapon, enemy) {
+  fireballStruckMonster(fireball, monster) {
+    if (fireball.hasFlownFreelyUntilNow) {
+      fireball.hasFlownFreelyUntilNow = false;
+      this.events.emit('monsterAttacked', monster.id, this.playerContainer.id);
+      console.log(fireball, monster);
+    }
+  }
+
+  enemyOverlap(weapon, monster) {
     if (this.playerContainer.isAttacking && !this.playerContainer.swordHit) {
       this.playerContainer.swordHit = true;
-      this.events.emit('monsterAttacked', enemy.id, this.playerContainer.id);
+      this.events.emit('monsterAttacked', monster.id, this.playerContainer.id);
     }
   }
 
@@ -152,6 +204,13 @@ class GameScene extends Phaser.Scene {
     this.events.on('spawnPlayer', playerModel => {
       this.createPlayer(playerModel);
       this.addCollisions();
+
+      // allow player to shoot fireball
+      this.input.keyboard.on('keydown-M', () => {
+        this.spawnFireball();
+        // const fireball = new Fireball(this, this.playerContainer, 'fireball', 'asd');
+        // this.fireballs.add(fireball);
+      });
     });
 
     this.events.on('chestSpawned', chestModel => {

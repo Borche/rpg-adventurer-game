@@ -9,8 +9,8 @@ class PlayerContainer extends Phaser.GameObjects.Container {
   constructor(scene, x, y, key, frame, health, maxHealth, id, attackAudio) {
     super(scene, x, y);
     this.scene = scene; // the scene this container will be added to
-    this.velocity = 160 * 2; // the velocity when moving our player
-    this.currentDirection = Direction.RIGHT;
+    this.velocity = 160 * 1.5; // the velocity when moving our player
+    this.currentDirection = Direction.LEFT;
     this.isAttacking = false;
     this.flipX = true;
     this.swordHit = false;
@@ -47,6 +47,9 @@ class PlayerContainer extends Phaser.GameObjects.Container {
 
     // create player's health bar
     this.createHealthBar();
+    if (DEBUG) {
+      this.createCoordsText();
+    }
 
     console.log('Player[this]', this);
   }
@@ -61,7 +64,7 @@ class PlayerContainer extends Phaser.GameObjects.Container {
     this.healthBar.clear();
     this.healthBar.fillStyle(0xffffff, 1);
     this.healthBar.fillRect(this.x - 32, this.y - 40, 64, 5);
-    this.healthBar.fillGradientStyle(0xff0000, 0xffffff, 4);
+    this.healthBar.fillGradientStyle(0x00ff00, 0x00ff00, 4);
     this.healthBar.fillRect(
       this.x - 32,
       this.y - 40,
@@ -81,7 +84,23 @@ class PlayerContainer extends Phaser.GameObjects.Container {
     this.updateHealthBar();
   }
 
+  createCoordsText() {
+    this.coordsText = this.scene.add.text(0, 0, `(${this.x},${this.y})`, {
+      fontSize: '20px',
+      fill: '#fff'
+    });
+    this.updateCoordsText();
+  }
+
+  updateCoordsText() {
+    this.coordsText.setText(`(${Math.round(this.x)},${Math.round(this.y)})`);
+    this.coordsText.x = this.x - 55;
+    this.coordsText.y = this.y - 60;
+  }
+
   update(cursors) {
+    this.updateCoordsText();
+
     this.body.setVelocity(0);
 
     if (cursors.left.isDown) {

@@ -20,6 +20,9 @@ class BootScene extends Phaser.Scene {
 
     // load the map tileset image
     this.load.image('background', 'assets/level/background-extruded.png');
+
+    // load the fireball image
+    this.load.image('fireball', 'assets/images/fireball.png');
   }
 
   loadSpriteSheets() {
