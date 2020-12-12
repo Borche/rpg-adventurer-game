@@ -20,6 +20,10 @@ class GameScene extends Phaser.Scene {
 
   update() {
     if (this.playerContainer) this.playerContainer.update(this.cursors);
+
+    // Using the method below, health bar and coords text is still above
+    // the dead monster after killing it for 1-2 seconds, and they are moving.
+    //if (this.monsters) this.monsters.getChildren().forEach(m => m.update());
   }
 
   createAudio() {

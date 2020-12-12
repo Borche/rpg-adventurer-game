@@ -58,6 +58,7 @@ class Monster extends Phaser.Physics.Arcade.Image {
   }
 
   createHealthBar() {
+    // creates a graphics game object
     this.healthBar = this.scene.add.graphics();
     this.updateHealthBar();
   }
@@ -81,6 +82,10 @@ class Monster extends Phaser.Physics.Arcade.Image {
     this.setVisible(true);
     this.body.checkCollision.none = false;
     this.updateHealthBar();
+    this.updateCoordsText();
+    this.updateModelCoordsText();
+    this.coordsText.visible = true;
+    this.modelCoordsText.visible = true;
   }
 
   makeInactive() {
@@ -88,6 +93,8 @@ class Monster extends Phaser.Physics.Arcade.Image {
     this.setVisible(false);
     this.body.checkCollision.none = true;
     this.healthBar.clear();
+    this.coordsText.visible = false;
+    this.modelCoordsText.visible = false;
   }
 
   update() {
