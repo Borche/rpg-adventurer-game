@@ -8877,11 +8877,11 @@
       {
          "columns": 32,
          "firstgid": 1,
-         "image": "background.png",
+         "image": "not used",
          "imageheight": 1504,
          "imagewidth": 1024,
          "margin": 0,
-         "name": "background",
+         "name": "tileset",
          "spacing": 0,
          "tilecount": 1504,
          "tileheight": 32,

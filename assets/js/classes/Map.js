@@ -1,8 +1,9 @@
 class Map {
-  constructor(scene, key, tileSetName, bgLayerName, blockedLayerName) {
+  constructor(scene, key, tileSetName, tilesImageKey, bgLayerName, blockedLayerName) {
     this.scene = scene; // the scene this map belongs to
-    this.key = key; // Tiled JSON file key name
-    this.tileSetName = tileSetName; // Tiled Tileset image key name
+    this.key = key; // Tiled JSON file key name (mapping to url for 'large_level.json' in Tile Cache)
+    this.tileSetName = tileSetName; // Name of tileset in json file exported from Tiled
+    this.tilesImageKey = tilesImageKey; // Key set when loading PNG image containing tile images
     this.bgLayerName = bgLayerName; // the name of the layer created in Tiled for the map background
     this.blockedLayerName = blockedLayerName; // the name of the layer created in tiled for the blocked areas
 
@@ -13,8 +14,10 @@ class Map {
     // create the tile map
     this.map = this.scene.make.tilemap({ key: this.key });
 
+    console.log('Map', this.map);
+
     // add the tileset image to our map
-    this.tiles = this.map.addTilesetImage(this.tileSetName, this.tileSetName, 32, 32, 1, 2);
+    this.tiles = this.map.addTilesetImage(this.tileSetName, this.tilesImageKey, 32, 32, 1, 2);
 
     // create our background
     this.backgroundLayer = this.map.createStaticLayer(this.bgLayerName, this.tiles, 0, 0);

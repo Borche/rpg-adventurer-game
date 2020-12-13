@@ -19,7 +19,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('button2', 'assets/images/ui/blue_button02.png');
 
     // load the map tileset image
-    this.load.image('background', 'assets/level/background-extruded.png');
+    this.load.image('tiles', 'assets/level/tiles-extruded.png');
 
     // load the fireball image
     this.load.image('fireball', 'assets/images/fireball.png');

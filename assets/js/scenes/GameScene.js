@@ -197,7 +197,7 @@ class GameScene extends Phaser.Scene {
 
   createMap() {
     // create the tile map
-    this.map = new Map(this, 'map', 'background', 'background', 'blocked');
+    this.map = new Map(this, 'map', 'tileset', 'tiles', 'background', 'blocked');
   }
 
   createGameManager() {
