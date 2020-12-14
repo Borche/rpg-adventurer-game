@@ -32,7 +32,7 @@ class Map {
     this.scene.physics.world.bounds.width = this.map.widthInPixels * 2;
     this.scene.physics.world.bounds.height = this.map.heightInPixels * 2;
 
-    // limi the camera to the size of our map
+    // limit the camera to the size of our map
     this.scene.cameras.main.setBounds(
       0,
       0,

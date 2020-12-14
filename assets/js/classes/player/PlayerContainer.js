@@ -51,7 +51,7 @@ class PlayerContainer extends Phaser.GameObjects.Container {
       this.createCoordsText();
     }
 
-    console.log('Player[this]', this);
+    console.log('Player', this);
   }
 
   createHealthBar() {

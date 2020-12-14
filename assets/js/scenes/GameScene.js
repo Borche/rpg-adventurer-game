@@ -16,7 +16,7 @@ class GameScene extends Phaser.Scene {
 
     this.createGameManager();
 
-    console.log(`World: `, this.physics.world);
+    console.log('World', this.physics.world);
   }
 
   update() {
