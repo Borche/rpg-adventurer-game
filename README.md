@@ -1,5 +1,5 @@
 # rpg-adventurer-game
-Game developed in an online course for learning phaser
+Game developed in an online course for learning phaser, with my personal additions to the game such as shooting fireball.
 
 Live here: https://borche.github.io/rpg-adventurer-game/
 
